@@ -6,6 +6,8 @@ import com.bernacki.testtask.marketing_api.entity.Town;
 import com.bernacki.testtask.marketing_api.repository.CampaignRepository;
 import com.bernacki.testtask.marketing_api.repository.KeywordRepository;
 import com.bernacki.testtask.marketing_api.repository.TownRepository;
+import com.bernacki.testtask.marketing_api.response.ApiError;
+import com.bernacki.testtask.marketing_api.response.ApiResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -55,22 +57,29 @@ public class CampaignService {
         return true;
     }
 
-    public ResponseEntity<HttpStatus> checkCampaignCorrectness(Campaign campaign){
+    public ResponseEntity<ApiResponse<?>> checkCampaignCorrectness(Campaign campaign){
         if (isNameUnique(campaign.getCampaignName())) {
             try {
                 campaign = assignTown(campaign);
-                saveCampaign(campaign);
-                return ResponseEntity.status(HttpStatus.ACCEPTED).build();
+                Campaign savedCampaign = saveCampaign(campaign);
+                ApiResponse<Campaign> response = new ApiResponse<>(true);
+                return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
             } catch (RuntimeException e) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+                ApiError error = new ApiError(HttpStatus.NOT_FOUND.value(), e.getMessage(), System.currentTimeMillis());
+                ApiResponse<?> response = new ApiResponse<>(false, error);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
         }
-        return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        ApiError error = new ApiError(HttpStatus.CONFLICT.value(), "Campaign name already exists", System.currentTimeMillis());
+        ApiResponse<?> response = new ApiResponse<>(false, error);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
     }
 
-    public ResponseEntity<HttpStatus> editCampaign(Campaign modifiedCampaign, BigInteger id){
+    public ResponseEntity<ApiResponse<?>> editCampaign(Campaign modifiedCampaign, BigInteger id){
         if (!checkIfExistById(id)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            ApiError error = new ApiError(HttpStatus.NOT_FOUND.value(), "Campaign not found", System.currentTimeMillis());
+            ApiResponse<?> response = new ApiResponse<>(false, error);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
         Campaign originalCampaign = findById(id);
@@ -82,7 +91,9 @@ public class CampaignService {
             modifiedCampaign = assignTown(modifiedCampaign);
             saveCampaign(modifiedCampaign);
         }
-        return ResponseEntity.status(HttpStatus.ACCEPTED).build();
+        Campaign savedCampaign = saveCampaign(modifiedCampaign);
+        ApiResponse<Campaign> response = new ApiResponse<>(true);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
 
     public List<Campaign> findAll(){

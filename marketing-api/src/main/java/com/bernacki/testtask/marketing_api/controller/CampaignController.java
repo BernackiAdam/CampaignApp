@@ -1,5 +1,6 @@
 package com.bernacki.testtask.marketing_api.controller;
 import com.bernacki.testtask.marketing_api.entity.Campaign;
+import com.bernacki.testtask.marketing_api.response.ApiResponse;
 import com.bernacki.testtask.marketing_api.service.CampaignService;
 
 import jakarta.transaction.Status;
@@ -33,13 +34,13 @@ public class CampaignController {
 
     @Transactional
     @PostMapping("/add")
-    public ResponseEntity<HttpStatus> addNewCampaign(@Valid @RequestBody Campaign campaign){
+    public ResponseEntity<ApiResponse<?>> addNewCampaign(@Valid @RequestBody Campaign campaign){
         return campaignService.checkCampaignCorrectness(campaign);
     }
 
     @Transactional
     @PutMapping("/edit/{id}")
-    public ResponseEntity<HttpStatus> editCampaign(@Valid @RequestBody Campaign modifiedCampaign, @PathVariable BigInteger id) {
+    public ResponseEntity<ApiResponse<?>> editCampaign(@Valid @RequestBody Campaign modifiedCampaign, @PathVariable BigInteger id) {
         return campaignService.editCampaign(modifiedCampaign, id);
     }
 

@@ -1,13 +1,14 @@
-package com.bernacki.testtask.marketing_api.exceptions;
+package com.bernacki.testtask.marketing_api.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Status {
-    private int code;
+@Data
+public class ApiError {
+    private int status;
     private String message;
+    private long timestamp;
 }
